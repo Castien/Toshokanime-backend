@@ -1,3 +1,5 @@
+// set up Express.js server
+
 const express = require('express');
 const app = express();
 const port = 9001;
@@ -9,6 +11,8 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
 });
+
+// connecting Mongoose to MongoDB
 
 const mongoose = require('mongoose');
 
