@@ -8,4 +8,4 @@ Backend:
 https://github.com/Castien/Toshokanime-backend
 
 Frontend:
-NOT YET MADE
+https://github.com/Castien/Toshokanime-frontend

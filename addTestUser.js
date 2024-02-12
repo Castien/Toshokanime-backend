@@ -11,7 +11,7 @@ mongoose.connect('mongodb+srv://Castien:TemporaryPW@mongopractice.lcbf0fe.mongod
 
     // Test user data
     const testUserData = {
-        username: 'Azuma Kazuma',
+        username: 'AzumaKazuma',
         email: 'breadshow@example.com',
         password: 'japan!',
         biography: 'This is experimental Japan #000!'
