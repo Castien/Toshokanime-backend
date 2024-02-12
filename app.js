@@ -1,14 +1,10 @@
-// app.js
 const express = require('express');
 const mongoose = require('mongoose');
+const session = require('express-session');
 const userRoutes = require('./routes/users');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
-const port = 9001;
-
-app.get('/', (req, res) => {
-  res.send('Over 9000!');
-});
 
 // connecting Mongoose to DB
 mongoose.connect('mongodb+srv://Castien:TemporaryPW@mongopractice.lcbf0fe.mongodb.net/toshokanime', {
@@ -20,12 +16,18 @@ mongoose.connect('mongodb+srv://Castien:TemporaryPW@mongopractice.lcbf0fe.mongod
 
 // middleware
 app.use(express.json());
+app.use(session({
+  secret: 'b0ssm@n',
+  resave: false,
+  saveUninitialized: false
+}));
 
 // using user routes
 app.use('/api', userRoutes);
+app.use('/api', authRoutes);
 
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
+app.get('/', (req, res) => {
+  res.send('Over 9000!');
 });
 
 module.exports = app;
