@@ -3,6 +3,9 @@ import User from '../models/user.js';
 
 const authRoutes = express.Router();
 
+/**
+ * POST /login
+ */
 authRoutes.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -12,13 +15,21 @@ authRoutes.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
-    // Compare plaintext passwords
+    // Compare passwords
     if (user.password !== password) {
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
-    // Setting session
-    req.session.user = { username };
+    // Setting session to verify user/admin status
+    req.session.user = {
+      username,
+      isAdmin: user.isAdmin
+    };
+
+    // Log session data for debugging
+    console.log('User session data:', req.session.user);
+
+    // Respond with success message
     res.status(200).json({ message: 'Logged in successfully' });
   } catch (err) {
     console.error(err);
@@ -26,7 +37,11 @@ authRoutes.post('/login', async (req, res) => {
   }
 });
 
+/**
+ * POST /logout
+ */
 authRoutes.post('/logout', (req, res) => {
+  // Destroy session on logout
   req.session.destroy();
   res.status(200).json({ message: 'Logged out successfully' });
 });
