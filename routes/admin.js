@@ -1,21 +1,30 @@
 import express from 'express';
+import User from '../models/user';
 
 const adminRoutes = express.Router();
 
 /**
  * GET /profile
- * Checks for admin status
+ * checks if the user stored in the session is an admin
+ * responds with a success message and the admin's username
+ * else responds with an unauthorized message
  */
-adminRoutes.get('/profile', (req, res) => {
-  console.log('Session data:', req.session);
+adminRoutes.get('/user', (req, res) => {
   if (req.session.user && req.session.user.isAdmin) {
     res.status(200).json({ message: 'Authorized', username: req.session.user.username });
+    console.log('Session data:', req.session);
   } else {
     res.status(401).json({ message: 'Unauthorized' });
   }
 });
 
-// Update user with admin status
+/**
+ * Update user admin status:
+ * verifies authenticated user is an admin
+ * else it returns a forbidden error
+ * finds the user by ID, updates their status to admin
+ * responds with a success message
+ */
 adminRoutes.put('/users/:id/admin', async (req, res) => {
   const { id } = req.params;
   
@@ -31,7 +40,7 @@ adminRoutes.put('/users/:id/admin', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Update user status to admin
+    // Assigns user status to admin
     user.isAdmin = true;
     await user.save();
 

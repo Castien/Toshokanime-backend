@@ -11,7 +11,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import session from 'express-session';
 import userRoutes from './routes/users.js';
-import authRoutes from './routes/authorization.js';
+// import authRoutes from './routes/authorization.js';
 import adminRoutes from './routes/admin.js';
 
 const app = express();
@@ -33,7 +33,7 @@ app.use(session({
 
 // HTTP routes
 app.use('/api', userRoutes);
-app.use('/api', authRoutes);
+// app.use('/api', authRoutes);
 app.use('/api', adminRoutes);
 
 app.get('/', (req, res) => {
