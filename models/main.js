@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const mainSchema = new mongoose.Schema({
     title: { type: String, required: true },
