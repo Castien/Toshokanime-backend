@@ -1,8 +1,7 @@
 import express from 'express';
-import User from '../models/user';
+import User from '../models/user.js';
 
 const router = express.Router();
-
 
 // Create a new user
 router.post('/users', async (req, res) => {
@@ -58,4 +57,4 @@ router.delete('/users/:id', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

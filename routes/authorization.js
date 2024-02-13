@@ -1,10 +1,9 @@
 import express from 'express';
-import User from '../models/user';
+import User from '../models/user.js';
 
-const router = express.Router();
+const authRoutes = express.Router();
 
-
-router.post('/login', async (req, res) => {
+authRoutes.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
     // Find user by username
@@ -27,9 +26,9 @@ router.post('/login', async (req, res) => {
   }
 });
 
-router.post('/logout', (req, res) => {
+authRoutes.post('/logout', (req, res) => {
   req.session.destroy();
   res.status(200).json({ message: 'Logged out successfully' });
 });
 
-module.exports = router;
+export default authRoutes;

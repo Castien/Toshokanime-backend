@@ -15,4 +15,4 @@ const mainSchema = new mongoose.Schema({
 
 const Main = mongoose.model('Main', mainSchema);
 
-module.exports = Main;
+export default Main;

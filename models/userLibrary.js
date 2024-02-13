@@ -11,4 +11,4 @@ const userLibrarySchema = new mongoose.Schema({
 
 const UserLibrary = mongoose.model('UserLibrary', userLibrarySchema);
 
-module.exports = UserLibrary;
+export default UserLibrary;

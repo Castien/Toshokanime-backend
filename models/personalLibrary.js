@@ -12,4 +12,4 @@ const personalLibrarySchema = new mongoose.Schema({
 
 const PersonalLibrary = mongoose.model('PersonalLibrary', personalLibrarySchema);
 
-module.exports = PersonalLibrary;
+export default PersonalLibrary;

@@ -1,8 +1,8 @@
 import express from 'express';
 
-const router = express.Router();
+const adminRoutes = express.Router();
 
-router.get('/profile', (req, res) => {
+adminRoutes.get('/profile', (req, res) => {
   if (req.session.user) {
     res.status(200).json({ username: req.session.user.username });
   } else {
@@ -10,4 +10,4 @@ router.get('/profile', (req, res) => {
   }
 });
 
-module.exports = router;
+export default adminRoutes;
