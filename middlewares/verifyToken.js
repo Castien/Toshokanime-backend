@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-exports.verifyToken = (req, res, next) => {
+export default async function verifyToken(req, res, next) {
   const token = req.cookies.token;
   try {
     const user = jwt.verify(token, process.env.SECRET);

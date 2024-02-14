@@ -4,48 +4,19 @@
  * 
  * conn.js:
  * retrieveMongoDB connection from the environment variable ATLAS_URI
- * initialize connectionString w/ process.env.ATLAS_URI, defaults to empty string
- * Mongoose connect method, passes connectionString and options object as arguments
- * exports function named getConnection that returns Mongoose connection object
  */
 import mongoose from 'mongoose';
-
-console.log(process.env.ATLAS_URI);
-const connectionString = process.env.ATLAS_URI || "";
-
-/**
- * useNewUrlParser: true - 
- * prevents your application from generating deprecation warnings
- * 
- * useUnifiedTopology: true -
- * enables Mongoose to use latest MongoDB driver topology engine
- * monitors MongoDB server handling/selection
- * for the client to send read and write operations.
- */
 
 /**  rethrow the error to be caught by the caller to
  * avoid async function returning rejected promise
  */
-const connectToMongoDB = async () => {
+
+export default async function mongoConn() {
     try {
-        await mongoose.connect(connectionString, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
-        console.log(`Connected to MongoDB`);
+        await mongoose.connect(process.env.ATLAS_URI || "");
+        console.log('Connected to mongodb');
     } catch (err) {
         console.error('Error connecting to MongoDB:', err);
         throw err;
     }
-};
-
-/**
- * export async function that connects to MongoDB
- * returns the Mongoose connection object
- */ 
-const getConnection = async () => {
-    await connectToMongoDB();
-    return mongoose.connection;
-};
-
-export default getConnection;
+}
