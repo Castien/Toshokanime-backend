@@ -1,22 +1,23 @@
-import express from 'express';
-import User from '../models/user';
+// import express from 'express';
+// // import User from '../models/user';
 
-const adminRoutes = express.Router();
+// const adminRoutes = express.Router();
 
-/**
- * GET /profile
- * checks if the user stored in the session is an admin
- * responds with a success message and the admin's username
- * else responds with an unauthorized message
- */
-adminRoutes.get('/user', (req, res) => {
-  if (req.session.user && req.session.user.isAdmin) {
-    res.status(200).json({ message: 'Authorized', username: req.session.user.username });
-    console.log('Session data:', req.session);
-  } else {
-    res.status(401).json({ message: 'Unauthorized' });
-  }
-});
+// /**
+//  * GET /profile
+//  * checks if the user stored in the session is an admin
+//  * responds with a success message and the admin's username
+//  * else responds with an unauthorized message
+//  */
+// adminRoutes.get('/users/:id', (req, res) => {
+//   console.log('Session data:', req.session);
+//   if (req.session.user && req.session.user.isAdmin) {
+//     res.status(200).json({ message: 'Authorized', username: req.session.user.username });
+    
+//   } else {
+//     res.status(401).json({ message: 'Unauthorized' });
+//   }
+// });
 
 /**
  * Update user admin status:
@@ -40,17 +41,17 @@ adminRoutes.put('/users/:id/admin', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Assigns user status to admin
-    user.isAdmin = true;
-    await user.save();
+//     // Assigns user status to admin
+//     user.isAdmin = true;
+//     await user.save();
 
-    // Respond with success message
-    res.status(200).json({ message: 'User updated to admin status successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
+//     // Respond with success message
+//     res.status(200).json({ message: 'User updated to admin status successfully' });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// });
 
 // // Authentication
 // adminRoutes.post('/login', async (req, res) => {

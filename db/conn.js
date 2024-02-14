@@ -8,7 +8,6 @@
  * Mongoose connect method, passes connectionString and options object as arguments
  * exports function named getConnection that returns Mongoose connection object
  */
-
 import mongoose from 'mongoose';
 
 console.log(process.env.ATLAS_URI);
@@ -23,22 +22,30 @@ const connectionString = process.env.ATLAS_URI || "";
  * monitors MongoDB server handling/selection
  * for the client to send read and write operations.
  */
-try {
-    // Set maxTimeMS timeout option globally
-    mongoose.set('maxTimeMS', 10000);
 
-    await mongoose.connect(connectionString, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    });
-    console.log(`Connected to MongoDB`);
-} catch (err) {
-    console.error('Error connecting to MongoDB:', err);
-}
+/**  rethrow the error to be caught by the caller to
+ * avoid async function returning rejected promise
+ */
+const connectToMongoDB = async () => {
+    try {
+        await mongoose.connect(connectionString, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        });
+        console.log(`Connected to MongoDB`);
+    } catch (err) {
+        console.error('Error connecting to MongoDB:', err);
+        throw err;
+    }
+};
 
 /**
- * Export function that returns the Mongoose connection object
+ * export async function that connects to MongoDB
+ * returns the Mongoose connection object
  */ 
-const getConnection = () => mongoose.connection;
-export default getConnection;
+const getConnection = async () => {
+    await connectToMongoDB();
+    return mongoose.connection;
+};
 
+export default getConnection;
