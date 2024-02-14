@@ -3,10 +3,7 @@ import User from '../models/user.js';
 
 const router = express.Router();
 
-/**
- * POST /users
- * Create a new user
- */
+// Create a new user
 router.post('/users', async (req, res) => {
     try {
         const newUser = new User(req.body);
@@ -17,10 +14,7 @@ router.post('/users', async (req, res) => {
     }
 });
 
-/**
- * GET /users
- * Get all users
- */
+// Get all users
 router.get('/users', async (req, res) => {
     try {
         const users = await User.find();
@@ -30,10 +24,7 @@ router.get('/users', async (req, res) => {
     }
 });
 
-/**
- * GET /users/:id
- * Get a single user
-*/
+// Get a single user by ID
 router.get('/users/:id', async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
@@ -46,10 +37,7 @@ router.get('/users/:id', async (req, res) => {
     }
 });
 
-/**
- * PUT /users/:id
- * Update a user
- */
+// Update a user
 router.put('/users/:id', async (req, res) => {
     try {
         const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -59,10 +47,7 @@ router.put('/users/:id', async (req, res) => {
     }
 });
 
-/**
- * DELETE /users/:id
- * Delete a user
- */
+// Delete a user
 router.delete('/users/:id', async (req, res) => {
     try {
         await User.findByIdAndDelete(req.params.id);

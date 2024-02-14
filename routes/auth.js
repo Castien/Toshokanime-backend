@@ -1,5 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import User from "../models/user.js";
 import verifyToken from "../middlewares/verifyToken.js";
 
@@ -22,21 +23,20 @@ authRoutes.post("/signup", async (req, res) => {
       isAdmin = true;
     }
 
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     // Create new user
     const user = await User.create({
       username,
       email,
-      password,
+      password: hashedPassword,
       isAdmin,
     });
 
-    // Create a new token
-    const token = jwt.sign({ user }, process.env.SECRET, {
-      expiresIn: "24h",
-    });
-
-    // Respond with the token
-    res.status(201).json(token);
+    // Return user details instead of just token
+    const { _id, username: userUsername, isAdmin: userIsAdmin } = user;
+    res.status(201).json({ user: { _id, username: userUsername, isAdmin: userIsAdmin } });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Internal server error' });
@@ -54,8 +54,8 @@ authRoutes.post("/login", async (req, res) => {
       return res.status(401).json({ msg: 'Invalid username or password' });
     }
 
-    // Check password (Make sure to hash passwords in production)
-    const passwordMatched = password === user.password;
+    // Check password
+    const passwordMatched = await bcrypt.compare(password, user.password);
     if (!passwordMatched) {
       return res.status(401).json({ msg: 'Invalid username or password' });
     }
@@ -68,11 +68,12 @@ authRoutes.post("/login", async (req, res) => {
     // Set the token as a cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // Enable in production
+      secure: process.env.NODE_ENV === 'production', // Enable in production
     });
 
-    // Respond with success message and token
-    res.status(201).json({ token, message: 'Logged in successfully' });
+    // Return token and user details
+    const { _id, username: userUsername, isAdmin: userIsAdmin } = user;
+    res.status(200).json({ token, user: { _id, username: userUsername, isAdmin: userIsAdmin }, message: 'Logged in successfully' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal server error' });

@@ -1,3 +1,1 @@
-//app.js should have:
-// - 
 
