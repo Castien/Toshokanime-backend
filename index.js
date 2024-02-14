@@ -1,78 +1,29 @@
-import mongoose from 'mongoose';
 import express from 'express';
-import morgan from 'morgan';
+import mongoose from 'mongoose';
 import cors from 'cors';
+import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
-import { useNavigate } from 'react-router-dom';
+import dotenv from 'dotenv';
 
-import mongoConn from './db/conn.js';
-import './loadEnv.js';
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 9001;
 
+// Middleware
+app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan('dev'));
+
 // Connect to MongoDB
-mongoConn()
-  .then(() => {
-    // Middleware
-    app.use(cors({
-      origin: 'http://localhost:3000',
-      optionsSuccessStatus: 200
-    }));
+mongoose.connect(process.env.ATLAS_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch((err) => console.error('Error connecting to MongoDB:', err));
 
-    app.use(cookieParser());
-    app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
-    app.use(morgan('dev'));
-
-    // Define Mongoose schema
-    const User = mongoose.model('User', {
-      username: String,
-      email: String,
-      password: String,
-      isAdmin: Boolean
-    });
-
-    // API routes
-    app.post('/api/register', async (req, res) => {
-      const { username, email, password, adminKey } = req.body;
-      const isAdmin = (adminKey === process.env.ADMIN_KEY);
-
-      const newUser = new User({
-        username,
-        email,
-        password,
-        isAdmin
-      });
-
-      try {
-        await newUser.save();
-        res.status(201).json({ message: 'User registered successfully' });
-      } catch (error) {
-        res.status(500).json({ error: 'An error occurred' });
-      }
-    });
-
-    app.post('/api/login', async (req, res) => {
-      const { username, password } = req.body;
-
-      try {
-        const user = await User.findOne({ username, password });
-        if (user) {
-          let isAdmin = user.isAdmin;
-          res.status(200).json({ message: 'Login successful', isAdmin }); // Include isAdmin in response
-        } else {
-          res.status(401).json({ error: 'Invalid credentials' });
-        }
-      } catch (error) {
-        res.status(500).json({ error: 'An error occurred' });
-      }
-    });
-
-    // Start server
-    app.listen(port, () => console.log(`Server is running on port ${port}`));
-  })
-  .catch((err) => {
-    console.error('Error connecting to MongoDB:', err);
-    process.exit(1);
-  });
+// Start server
+app.listen(port, () => console.log(`Server is running on port ${port}`));
