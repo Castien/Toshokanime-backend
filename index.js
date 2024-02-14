@@ -1,53 +1,78 @@
-import './loadEnv.js'; 
+import mongoose from 'mongoose';
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
-import mongoConn from './db/conn.js';
 import cookieParser from 'cookie-parser';
-import userRoutes from './routes/users.js';
-import authRoutes from './routes/auth.js';
-import adminRoutes from './routes/admin.js'; // Add adminRoutes import
+import { useNavigate } from 'react-router-dom';
 
-mongoConn();
+import mongoConn from './db/conn.js';
+import './loadEnv.js';
+
 const app = express();
 const port = process.env.PORT || 9001;
 
-//CORS config
-app.use(cors({
-  origin: 'http://localhost:3000',
-  optionsSuccessStatus: 200
-}));
+// Connect to MongoDB
+mongoConn()
+  .then(() => {
+    // Middleware
+    app.use(cors({
+      origin: 'http://localhost:3000',
+      optionsSuccessStatus: 200
+    }));
 
-// // Manual CORS configuration
-// app.use((req, res, next) => {
-//   console.log('Setting CORS headers...');
-//   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-//   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-//   next();
-// });
+    app.use(cookieParser());
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    app.use(morgan('dev'));
 
-// Other middleware
-app.use(morgan('dev')); // logger
-app.use(express.json()); // for data in req.body
-app.use(express.urlencoded({ extended: true })); // allow data in url string
-app.use(cookieParser());
+    // Define Mongoose schema
+    const User = mongoose.model('User', {
+      username: String,
+      email: String,
+      password: String,
+      isAdmin: Boolean
+    });
 
-// HTTP routes
-app.use('/api', userRoutes);
-app.use('/api', authRoutes);
-app.use('/api', adminRoutes); // Mount adminRoutes under /api
+    // API routes
+    app.post('/api/register', async (req, res) => {
+      const { username, email, password, adminKey } = req.body;
+      const isAdmin = (adminKey === process.env.ADMIN_KEY);
 
-// Root route
-app.get('/', (req, res) => {
-  res.send('Over 9000!');
-});
+      const newUser = new User({
+        username,
+        email,
+        password,
+        isAdmin
+      });
 
-app.post('/', (req, res) => {
-  res.send('Done did a thing.');
-});
+      try {
+        await newUser.save();
+        res.status(201).json({ message: 'User registered successfully' });
+      } catch (error) {
+        res.status(500).json({ error: 'An error occurred' });
+      }
+    });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
-});
+    app.post('/api/login', async (req, res) => {
+      const { username, password } = req.body;
+
+      try {
+        const user = await User.findOne({ username, password });
+        if (user) {
+          let isAdmin = user.isAdmin;
+          res.status(200).json({ message: 'Login successful', isAdmin }); // Include isAdmin in response
+        } else {
+          res.status(401).json({ error: 'Invalid credentials' });
+        }
+      } catch (error) {
+        res.status(500).json({ error: 'An error occurred' });
+      }
+    });
+
+    // Start server
+    app.listen(port, () => console.log(`Server is running on port ${port}`));
+  })
+  .catch((err) => {
+    console.error('Error connecting to MongoDB:', err);
+    process.exit(1);
+  });
