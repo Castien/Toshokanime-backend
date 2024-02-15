@@ -47,6 +47,7 @@ In Progress:
 - CRUD operations for main library entries. (working on backend)
 - Search, filter, and view entries in the main library.
 
+
 ## User Functionalities:
 
 Completed:
@@ -58,6 +59,7 @@ In Progress:
 - Edit non-publicly viewable email and password.
 - Search, filter, and view entries in the main library.
 - Retrieve specific entries from the database to add to the personal library.
+- API Access
 
 
 

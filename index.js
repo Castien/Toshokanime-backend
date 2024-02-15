@@ -4,6 +4,7 @@ const express = require('express');
 const connectDB = require('./db/connectDB.js');
 const userRoutes = require('./routes/users.js');
 const mediaRoutes = require('./routes/media.js');
+const dashboardRoutes = require('./routes/dashboard.js'); // Import dashboard routes
 
 const app = express();
 const port = process.env.PORT || 9001;
@@ -19,6 +20,7 @@ app.use(express.json());
 // Routes
 app.use('/api', userRoutes);
 app.use('/api', mediaRoutes);
+app.use('/api', dashboardRoutes); // Mount the dashboard routes
 
 // Handle invalid routes
 app.use((req, res) => {
