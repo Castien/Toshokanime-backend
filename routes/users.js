@@ -1,6 +1,8 @@
 require("dotenv").config(); // Load environment variables from .env file
 const express = require("express");
 const User = require("../models/user.js"); // Correct the path to the User model
+const jwt = require("jsonwebtoken");
+const verifyToken = require("../middleware/verifyToken.js");
 
 const userRoutes = express.Router();
 
@@ -11,7 +13,7 @@ const handleError = (res, error) => {
 };
 
 // Get all users
-userRoutes.get('/users', async (req, res) => {
+userRoutes.get("/users", verifyToken, async (req, res) => {
   try {
     const users = await User.find();
     res.json(users);
@@ -21,14 +23,14 @@ userRoutes.get('/users', async (req, res) => {
 });
 
 // Get a user by username
-userRoutes.get('/users/:username', async (req, res) => {
+userRoutes.get("/users/:username", verifyToken, async (req, res) => {
   try {
     const username = req.params.username;
     const user = await User.findOne({ username });
     if (user) {
       res.json(user);
     } else {
-      res.status(404).json({ error: 'User not found' });
+      res.status(404).json({ error: "User not found" });
     }
   } catch (error) {
     handleError(res, error);
@@ -36,7 +38,7 @@ userRoutes.get('/users/:username', async (req, res) => {
 });
 
 // Create a new user
-userRoutes.post('/users', async (req, res) => {
+userRoutes.post("/users", verifyToken, async (req, res) => {
   try {
     const newUser = new User(req.body);
     await newUser.save();
@@ -47,7 +49,7 @@ userRoutes.post('/users', async (req, res) => {
 });
 
 // Update a user by ID
-userRoutes.put('/users/:id', async (req, res) => {
+userRoutes.put("/users/:id", verifyToken, async (req, res) => {
   try {
     const userId = req.params.id;
     const updatedUser = await User.findByIdAndUpdate(userId, req.body, { new: true });
@@ -58,11 +60,11 @@ userRoutes.put('/users/:id', async (req, res) => {
 });
 
 // Delete a user by ID
-userRoutes.delete('/users/:id', async (req, res) => {
+userRoutes.delete("/users/:id", verifyToken, async (req, res) => {
   try {
     const userId = req.params.id;
     await User.findByIdAndDelete(userId);
-    res.json({ message: 'User deleted successfully' });
+    res.json({ message: "User deleted successfully" });
   } catch (error) {
     handleError(res, error);
   }
@@ -99,23 +101,25 @@ userRoutes.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ username, password });
     if (user) {
+      // Generate JWT token
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
       let isAdmin = user.isAdmin; // Assuming isAdmin is a field in your User schema
-      res.status(200).json({ message: 'Login successful', isAdmin });
-  } else {
-      res.status(401).json({ error: 'Invalid credentials' });
+      res.status(200).json({ message: "Login successful", isAdmin, token });
+    } else {
+      res.status(401).json({ error: "Invalid credentials" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred" });
   }
-} catch (error) {
-  res.status(500).json({ error: 'An error occurred' });
-}
 });
 
-userRoutes.post('/api/users/:userId/profile', async (req, res) => {
+userRoutes.post("/api/users/:userId/profile", verifyToken, async (req, res) => {
   const userId = req.params.userId;
   const profileData = req.body;
 
   try {
     await User.findByIdAndUpdate(userId, profileData);
-    res.status(200).json({ message: 'User profile updated successfully' });
+    res.status(200).json({ message: "User profile updated successfully" });
   } catch (error) {
     handleError(res, error);
   }
