@@ -1,119 +1,124 @@
-import express from 'express';
-import User from '../models/user.js';
+require("dotenv").config(); // Load environment variables from .env file
+const express = require("express");
+const User = require("../models/user.js"); // Correct the path to the User model
 
-const router = express.Router();
+const userRoutes = express.Router();
+
+// Error handling middleware
+const handleError = (res, error) => {
+  console.error("Error:", error);
+  res.status(500).json({ error: "Internal Server Error" });
+};
+
+// Get all users
+userRoutes.get('/users', async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    handleError(res, error);
+  }
+});
+
+// Get a user by username
+userRoutes.get('/users/:username', async (req, res) => {
+  try {
+    const username = req.params.username;
+    const user = await User.findOne({ username });
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    handleError(res, error);
+  }
+});
 
 // Create a new user
-router.post('/users', async (req, res) => {
+userRoutes.post('/users', async (req, res) => {
   try {
     const newUser = new User(req.body);
     await newUser.save();
     res.status(201).json(newUser);
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    handleError(res, error);
   }
 });
-
-// Get all users
-router.get('/users', async (req, res) => {
-  try {
-    const users = await User.find();
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-// Get a user by username
-router.get('/api/user/:username', async (req, res) => {
-    try {
-      const username = req.params.username;
-      // Query the database to find the user by their username
-      const user = await User.findOne({ username });
-      if (user) {
-        // User found, send user data as response
-        res.json(user);
-      } else {
-        // If user is not found, return a 404 status
-        res.status(404).json({ error: 'User not found' });
-      }
-    } catch (error) {
-      // Handle errors appropriately
-      console.error('Error fetching user by username:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
 
 // Update a user by ID
-router.put('/users/:id', async (req, res) => {
+userRoutes.put('/users/:id', async (req, res) => {
   try {
     const userId = req.params.id;
     const updatedUser = await User.findByIdAndUpdate(userId, req.body, { new: true });
     res.json(updatedUser);
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    handleError(res, error);
   }
 });
 
 // Delete a user by ID
-router.delete('/users/:id', async (req, res) => {
+userRoutes.delete('/users/:id', async (req, res) => {
   try {
     const userId = req.params.id;
     await User.findByIdAndDelete(userId);
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    handleError(res, error);
   }
 });
 
-// API routes
-router.post('/api/register', async (req, res) => {
+userRoutes.post("/register", async (req, res) => {
   const { username, email, password, adminKey } = req.body;
-  const isAdmin = (adminKey === process.env.ADMIN_KEY);
-
-  const newUser = new User({
-    username,
-    email,
-    password,
-    isAdmin
-  });
+  const isAdmin = adminKey === process.env.ADMIN_KEY;
 
   try {
+    // Check if username or email already exists
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    if (existingUser) {
+      return res.status(400).json({ error: "Username or email already exists" });
+    }
+
+    // Create a new user
+    const newUser = new User({
+      username,
+      email,
+      password,
+      isAdmin,
+    });
     await newUser.save();
-    res.status(201).json({ message: 'User registered successfully' });
+    res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
-    res.status(500).json({ error: 'An error occurred' });
+    handleError(res, error);
   }
 });
 
-router.post('/api/login', async (req, res) => {
+userRoutes.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
     const user = await User.findOne({ username, password });
     if (user) {
-      let isAdmin = user.isAdmin;
-      res.status(200).json({ message: 'Login successful', isAdmin }); // Include isAdmin in response
-    } else {
+      let isAdmin = user.isAdmin; // Assuming isAdmin is a field in your User schema
+      res.status(200).json({ message: 'Login successful', isAdmin });
+  } else {
       res.status(401).json({ error: 'Invalid credentials' });
-    }
-  } catch (error) {
-    res.status(500).json({ error: 'An error occurred' });
   }
+} catch (error) {
+  res.status(500).json({ error: 'An error occurred' });
+}
 });
 
-router.post('/api/user/:userId/profile', async (req, res) => {
+userRoutes.post('/api/users/:userId/profile', async (req, res) => {
   const userId = req.params.userId;
-  const profileData = req.body; // Assuming req.body contains the updated profile data
+  const profileData = req.body;
 
   try {
-    // Update the user's profile data in the database
     await User.findByIdAndUpdate(userId, profileData);
     res.status(200).json({ message: 'User profile updated successfully' });
   } catch (error) {
-    console.error('Error updating user profile:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    handleError(res, error);
   }
 });
 
-export default router;
+module.exports = userRoutes;
